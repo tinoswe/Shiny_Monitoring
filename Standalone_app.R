@@ -1,5 +1,7 @@
 library(shiny)
-#install.packages("lubridate")
+dat <- data.frame(date=seq.Date(Sys.Date(),by=1,length.out=5),
+                  temp = runif(5))
+
 library(lubridate)
 df <- read.csv(file="../RH_T/CSV_Files/all_data.csv",
                header=TRUE,
@@ -18,15 +20,18 @@ names(df) <- c("Time",
                "MOB 4 - HR",
                "MOB 5 - HR")
 
-#year(df$XT2[2000])
-#month(df$XT2[2000])
-#day(df$XT2[2000])
-#hour(df$XT2[2000])
-#minute(df$XT2[2000])
-#second(df$XT2[2000])
-#d_years <- unique(year(df$XT2))
-#d_months <- unique(month(df$XT2))
-#d_days <- unique(day(df$XT2))
-#d_hours <- unique(hour(df$XT2))
+ui <- fluidPage(
+  fluidRow(column(12,#12 for full page width
+                  dataTableOutput('dto')))
+)
 
+server <- function(input,output){
+  
+  output$dto <- renderDataTable(df,
+                                options = list(
+                                  pageLength = 20))
 
+}
+
+runApp(list(ui=ui,
+            server=server))
