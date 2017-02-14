@@ -10,14 +10,15 @@ df <- read.csv(file="../RH_T/CSV_Files/all_data.csv",
 df$XT2 <- strptime(df$XT2,
                    format="%Y-%m-%d %H:%M:%S")
 names(df) <- c("DateTime",
-               "MOB 2 - T",
-               "MOB 3 - T",
-               "MOB 4 - T",
-               "MOB 5 - T",
-               "MOB 2 - HR",
-               "MOB 3 - HR",
-               "MOB 4 - HR",
-               "MOB 5 - HR")
+               "2 - T",
+               "3 - T",
+               "4 - T",
+               "5 - T",
+               "2 - HR",
+               "3 - HR",
+               "4 - HR",
+               "5 - HR")
+
 
 #year(df$XT2[2000])
 #month(df$XT2[2000])
@@ -29,6 +30,9 @@ names(df) <- c("DateTime",
 #d_months <- unique(month(df$XT2))
 #d_days <- unique(day(df$XT2))
 #d_hours <- unique(hour(df$XT2))
+
+#df[, grepl( "- T" , names( df ) )]
+
 
 #jan16
 df_jan16 <- df[month(df$DateTime)=="1",] 
@@ -61,16 +65,53 @@ df_feb16 <- na.omit(df_feb16)
 function(input, output) {
   
   datasetInput <- reactive({
+    
     switch(input$dataset,
-           "Jan 16" = head(df_jan16, n=15),
-           "Feb 16" = head(df_feb16, n=20))
+           "Jan 16" = df_jan16,
+           "Feb 16" = df_feb16)
+    
   })
   
-  
-  
-  output$table <- renderTable({
-    datasetInput()
+  output$plot <- renderPlot({
+    library(ggplot2)
+    library(reshape)
+    
+    data <- datasetInput()
+    
+    data_T <- data[, !grepl( "- HR" , names( data ) )]
+    data_HR <- data[, !grepl( "- T" , names( data ) )]
+
+    data_T$dtime <- strptime(paste(data_T$Day, data_T$Time, sep = " "),
+                            format="%Y-%m-%d %H:%M:%S")
+    
+    data_T$Day <- c()
+    data_T$Time <- c()
+
+    d_t_t <- melt(data_T,  
+                  id = "dtime")
+
+    #tt <- d_t_t[,1]
+    #xx <- d_t_t[,3]
+    #fact <- factor(d_t_t[,2])
+    
+    colnames(d_t_t) <- c("tt", "fact", "xx")
+    
+    ggplot(data = d_t_t, 
+           aes(x = tt,
+               y = xx)) + geom_line(aes(colour = fact)) + theme_bw()
+           
+    
+    #plot(d_t_t$dtime,
+    #     d_t_t$value) 
+       
   })
+  
+  output$table <- renderDataTable( #{
+    dataset <- datasetInput(),
+    options = list(pageLength = 25,
+                   dom  = 'tip')
+#  }
+)
   
   # output$downloadData <- downloadHandler(
   #   filename = function() { 
