@@ -72,8 +72,16 @@ df_mar16$DateTime <- c()
 df_mar16 <- df_mar16[,c(9,10,1,2,3,4,5,6,7,8)]
 df_mar16 <- na.omit(df_mar16)
 
-#df_jan16 <- df_jan16[1:100,]
-#df_feb16 <- df_feb16[1:100,]
+#apr16
+df_apr16 <- df[month(df$DateTime)=="4",] 
+df_apr16$Day <- as.character(date(df_apr16$DateTime))
+df_apr16$Time <- paste(sprintf("%02d", hour(df_apr16$DateTime)),
+                       sprintf("%02d", minute(df_apr16$DateTime)),
+                       sprintf("%02d", second(df_apr16$DateTime)),
+                       sep=":")
+df_apr16$DateTime <- c()
+df_apr16 <- df_apr16[,c(9,10,1,2,3,4,5,6,7,8)]
+df_apr16 <- na.omit(df_apr16)
 
 function(input, output) {
   
@@ -82,7 +90,8 @@ function(input, output) {
     switch(input$dataset,
            "Jan 16" = df_jan16,
            "Feb 16" = df_feb16,
-           "Mar 16" = df_mar16)
+           "Mar 16" = df_mar16,
+           "Apr 16" = df_apr16)
     
   })
   
@@ -90,8 +99,7 @@ function(input, output) {
 
     library(ggplot2)
     library(reshape)
-    library(dygraphs)
-    
+
     data <- datasetInput()
     
     data_T <- data[, !grepl( "- HR" , names( data ) )]
@@ -125,16 +133,40 @@ function(input, output) {
                    dom  = 'tip'),
     
     
-  output$dygraph <- renderDygraph({
+  output$tgraph <- renderDygraph({
     #https://faidherbard.shinyapps.io/joburgdygraph/
     
-    data <- datasetInput()
-    filtered <- filter(data,
-                       Variety == input$productname,
-                       Count == input$count )
+    library(reshape)
     
-    #dygraph(datasetInput(), main="") %>%
-    #  dySeries(c("lwr", "fit", "upr"), label="" ) 
+    data <- datasetInput()
+    data_T <- data[, !grepl( "- HR" , names( data ) )]
+    data_HR <- data[, !grepl( "- T" , names( data ) )]
+    data_T$dtime <- strptime(paste(data_T$Day, data_T$Time, sep = " "),
+                             format="%Y-%m-%d %H:%M:%S")
+    data_T$Day <- c()
+    data_T$Time <- c()
+    
+    #d_t_t <- melt(data_T,  
+    #              id = "dtime")
+    #colnames(d_t_t) <- c("T", "LABEL", "Y")
+    
+    
+    #filtered <- filter(d_t_t,
+    #                   Variety == input$productname,
+    #                   Count == input$count )
+    
+    #dygraph(d_t_t, main="") %>%
+    #  dySeries(c("T", "LABEL", "Y"), label="" ) 
+    
+    xts(data_T[,names(data_T)!="dtime"], 
+        strptime(data_T$dtime, format = "%Y-%m-%d %H:%M:%S")) %>%
+    dygraph() %>%
+      dyAxis("y", valueRange = c(10, 30), label="Temp [°C]") %>%
+      dyLimit(as.numeric(15), color = "red") %>%
+      dyLimit(as.numeric(25), color = "red")
+    
+    #dygraph(data_T, main = "test") %>%
+    #  dyOptions(colors = RColorBrewer::brewer.pal(3, "Set2"))
     
     }
   )
