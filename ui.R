@@ -10,17 +10,16 @@ fluidPage(
                   choices = c("Jan 16",
                               "Feb 16",
                               "Mar 16",
-                              "Apr 16")
-      #,downloadButton('downloadData', 'Download')
+                              "Apr 16",
+                              "May 16",
+                              "Jun 16",
+                              "Jul 16",
+                              "Aug 16",
+                              "Sep 16",
+                              "Oct 16",
+                              "Nov 16",
+                              "Dec 16")
     )
-    
-    #dateRangeInput("daterange1", "Date range:",
-    #               start = "2016-01-01",
-    #               end   = "2016-12-31"),
-    
-    #   actionButton("update", "Update range")
-    
-    
     ),
     
     mainPanel(
@@ -28,7 +27,8 @@ fluidPage(
       
         tabPanel("Data", dataTableOutput('table')),
         #tabPanel("Charts", plotOutput("plot")),
-        tabPanel("T Chart",dygraphOutput("tgraph"))
+        tabPanel("T Chart",dygraphOutput("tgraph")),
+        tabPanel("HR Chart",dygraphOutput("ugraph"))
         
         )
     )
