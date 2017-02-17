@@ -184,7 +184,6 @@ function(input, output) {
            "Oct 16" = df_oct16,
            "Nov 16" = df_nov16,
            "Dec 16" = df_dec16)
-    
   })
   
   output$plot <- renderPlot({
